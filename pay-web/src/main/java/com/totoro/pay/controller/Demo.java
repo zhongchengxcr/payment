@@ -1,7 +1,7 @@
 package com.totoro.pay.controller;
 
 
-import com.totoro.pay.channel.channel.ChannelPayProcess;
+import com.totoro.pay.routing.mapping.RoutingManger;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,18 +9,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @Api(value = "hello")
 public class Demo {
 
+
     @Autowired
-    private Map<String, ChannelPayProcess> channelas;
+    private RoutingManger routingManger;
 
     @ApiOperation(value="获取用户列表", notes="")
     @RequestMapping(method = RequestMethod.GET,value = "/hello")
     public String hello(){
+
+        Object obj = routingManger.routing("wx.refund.app","zhongc");
+
+        obj = routingManger.routing("wx.pay.app","zhongc");
+
+        System.out.println(obj);
         return "hello !";
     }
 

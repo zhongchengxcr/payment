@@ -1,4 +1,4 @@
-package com.totoro.pay.routing.core;
+package com.totoro.pay.routing.mapping;
 
 /**
  * 标题、简要说明. <br>
@@ -12,7 +12,7 @@ package com.totoro.pay.routing.core;
  * @author zhongcheng_m@yeah.net
  * @version 1.0.0
  */
-public interface HandlerMapping {
+public interface RoutingManger {
 
-    Object getHandler(String services);
+    Object routing(String service, Object req);
 }

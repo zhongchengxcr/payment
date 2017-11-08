@@ -21,13 +21,14 @@ import org.springframework.stereotype.Component;
 public class WxPayAdapter implements ChannelPayProcess {
 
     @ChannelMapping("pay.app")
-    public void pay() {
-
+    public String pay(String name) {
+        System.out.println(name);
+        return "Hello";
     }
 
     @ChannelMapping("refund.app")
     public void refund() {
-
+        System.out.println("hello");
     }
 
 

@@ -1,4 +1,4 @@
-package com.totoro.pay.routing.core;
+package com.totoro.pay.routing.mapping;
 
 import java.lang.reflect.Method;
 
@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
  * @author zhongcheng_m@yeah.net
  * @version 1.0.0
  */
-public class HandlerMethodInfo {
+public class MethodHandlerDefinition implements HandlerDefinition {
 
     private String name;
 
@@ -29,7 +29,7 @@ public class HandlerMethodInfo {
         return name;
     }
 
-    public HandlerMethodInfo setName(String name) {
+    public MethodHandlerDefinition setName(String name) {
         this.name = name;
         return this;
     }
@@ -38,7 +38,7 @@ public class HandlerMethodInfo {
         return clzz;
     }
 
-    public HandlerMethodInfo setClzz(Class clzz) {
+    public MethodHandlerDefinition setClzz(Class clzz) {
         this.clzz = clzz;
         return this;
     }
@@ -47,7 +47,7 @@ public class HandlerMethodInfo {
         return channel;
     }
 
-    public HandlerMethodInfo setChannel(Object channel) {
+    public MethodHandlerDefinition setChannel(Object channel) {
         this.channel = channel;
         return this;
     }
@@ -56,14 +56,14 @@ public class HandlerMethodInfo {
         return method;
     }
 
-    public HandlerMethodInfo setMethod(Method method) {
+    public MethodHandlerDefinition setMethod(Method method) {
         this.method = method;
         return this;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("HandlerMethodInfo{");
+        final StringBuilder sb = new StringBuilder("MethodHandlerDefinition{");
         sb.append("name='").append(name).append('\'');
         sb.append(", clzz=").append(clzz);
         sb.append(", channel=").append(channel);

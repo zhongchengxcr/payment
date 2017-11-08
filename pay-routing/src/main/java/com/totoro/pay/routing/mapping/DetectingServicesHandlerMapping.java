@@ -1,8 +1,8 @@
-package com.totoro.pay.routing.core;
+package com.totoro.pay.routing.mapping;
 
-import com.totoro.pay.channel.channel.ChannelPayProcess;
-import com.totoro.pay.routing.annotation.AnnotationTest;
+import com.google.common.base.Preconditions;
 import com.totoro.pay.channel.annotation.ChannelMapping;
+import com.totoro.pay.channel.channel.ChannelPayProcess;
 import com.totoro.pay.routing.exception.HandlerRegistException;
 import com.totoro.pay.routing.util.AopTargetUtils;
 import com.totoro.pay.routing.util.StringUtils;
@@ -14,7 +14,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -36,11 +35,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class DetectingServicesHandlerMapping implements HandlerMapping, InitializingBean {
 
+
     @Autowired
     private Map<String, ChannelPayProcess> channels;
 
-    @Autowired
-    private MappingRegistry mappingRegistry;
+    private MappingRegistry mappingRegistry = new MappingRegistry();
 
 
     private Map<String, ChannelPayProcess> registFailedChannels = new ConcurrentHashMap<>();
@@ -48,35 +47,14 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
 
     @Override
     public Object getHandler(String services) {
-        return mappingRegistry.getMapingByService(services);
+        return mappingRegistry.getMappingByService(services);
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        System.out.println("================================================");
         initHandlerMethods();
     }
 
-
-    public static void main(String[] args) {
-
-//        Set<Method> methods = MethodIntrospector.selectMethods(AnnotationTest.class, (ReflectionUtils.MethodFilter) method -> {
-//
-//            Annotation annotation = AnnotationUtils.findAnnotation(method, ChannelMapping.class);
-//
-//            if (annotation != null) {
-//                return true;
-//            }
-//            return false;
-//
-//        });
-//
-//
-//        methods.stream().map(method -> method.getName()).forEach((System.out::println));
-
-        System.out.println(AnnotatedElementUtils.hasAnnotation(AnnotationTest.class, ChannelMapping.class));
-
-    }
 
     /**
      * 初始化
@@ -93,6 +71,9 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
         }
     }
 
+    /**
+     * 过滤每个实现了 ChannelPayProcess 的 bean,找出 "渠道"
+     */
     public void detectHandlers() {
         channels.entrySet().stream().filter((entry) -> {
             ChannelPayProcess channelProcess = entry.getValue();
@@ -107,6 +88,12 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
         });
     }
 
+
+    /**
+     * 过滤每个方法
+     *
+     * @param entry
+     */
     protected void detectHandlerMethods(final Map.Entry<String, ChannelPayProcess> entry) {
         try {
             Object channel = AopTargetUtils.getTarget(entry.getValue());
@@ -118,9 +105,9 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
                 return false;
             });
 
-            ChannelMapping clssChannelMapping = AnnotationUtils.findAnnotation(channel.getClass(), ChannelMapping.class);
+            ChannelMapping classChannelMapping = AnnotationUtils.findAnnotation(channel.getClass(), ChannelMapping.class);
 
-            String routingServicePrefix = StringUtils.ignoreEmpty(clssChannelMapping.value());
+            String routingServicePrefix = StringUtils.ignoreEmpty(classChannelMapping.value());
 
 
             if (!StringUtils.endsWithIgnoreCase(routingServicePrefix, ".")) {
@@ -135,22 +122,49 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
                 }
 
                 String service = routingServicePrefix + routingServiceSuffix;
-                registMapping(service, channel, method);
+                registerMapping(service, channel, method);
             }
 
         } catch (Exception e) {
-            throw new HandlerRegistException("Handler regist failed :" + entry.getKey());
+            throw new HandlerRegistException("Handler register failed :" + entry.getKey());
         }
     }
 
 
-    private void registMapping(String service, Object channel, Method method) {
-        HandlerMethodInfo handlerMethodInfo = new HandlerMethodInfo();
+    private void registerMapping(String service, Object channel, Method method) {
+        MethodHandlerDefinition handlerMethodInfo = new MethodHandlerDefinition();
         handlerMethodInfo.setMethod(method).setChannel(channel);
         mappingRegistry.register(service, handlerMethodInfo);
     }
 
     protected boolean isChannelHandler(Class<?> beanType) {
         return AnnotatedElementUtils.hasAnnotation(beanType, ChannelMapping.class);
+    }
+
+
+    /**
+     * 注册Handler
+     */
+    class MappingRegistry {
+
+        private Map<String, MethodHandlerDefinition> mappingLookup = new ConcurrentHashMap<>(16);
+
+        public void register(String service, MethodHandlerDefinition handlerMethodInfo) {
+            Preconditions.checkArgument(!mappingLookup.containsKey(service), "Duplicate service : %s ", service);
+            Preconditions.checkNotNull(handlerMethodInfo, "HandlerMethodInfo is null");
+            //TODO 检查
+            mappingLookup.put(service, handlerMethodInfo);
+        }
+
+
+        public Map<String, MethodHandlerDefinition> getMappings() {
+            return this.mappingLookup;
+        }
+
+        public MethodHandlerDefinition getMappingByService(String service) {
+            return mappingLookup.get(service);
+        }
+
+
     }
 }
