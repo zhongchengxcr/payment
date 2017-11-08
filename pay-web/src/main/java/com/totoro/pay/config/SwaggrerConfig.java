@@ -1,4 +1,4 @@
-package com.totoro.pay.web.config;
+package com.totoro.pay.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

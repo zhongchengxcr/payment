@@ -15,6 +15,7 @@
         <module>pay-mapper</module>
         <module>pay-routing</module>
         <module>pay-channel</module>
+        <module>pay-common</module>
     </modules>
 
     <properties>

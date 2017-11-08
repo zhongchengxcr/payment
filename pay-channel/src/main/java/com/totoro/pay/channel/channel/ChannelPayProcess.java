@@ -1,4 +1,4 @@
-package com.totoro.pay.channel;
+package com.totoro.pay.channel.channel;
 
 /**
  * 说明 . <br>
@@ -12,5 +12,9 @@ package com.totoro.pay.channel;
  * @author zhongcheng_m@yeah.net
  * @version 1.0.0
  */
-public class Adapter {
+public interface ChannelPayProcess {
+
+
+
+
 }

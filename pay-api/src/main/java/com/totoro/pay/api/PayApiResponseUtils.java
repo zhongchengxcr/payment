@@ -11,7 +11,7 @@ import com.totoro.pay.api.response.BaseApiResultResponse;
  * <p>
  * Company: 百趣
  * <p>
- * @author wangpinzhuang@126.com
+ * @author zhongcheng_m@yeah.net
  * @version 1.0.0
  */
 public class PayApiResponseUtils {
