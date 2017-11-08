@@ -15,10 +15,7 @@ package com.totoro.pay.channel.api;
 public interface SignProcess<GET_INPUT_TYPE, VALIDATE_INPUT_TYPE, KEY_TYPE> {
 
     enum SignType {
-
         MD5, HMACSHA256, RSA, RSA2;
-
-
     }
 
     String get(GET_INPUT_TYPE param, KEY_TYPE key, SignType signType);
