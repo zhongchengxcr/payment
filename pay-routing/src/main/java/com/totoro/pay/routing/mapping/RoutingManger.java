@@ -14,5 +14,5 @@ package com.totoro.pay.routing.mapping;
  */
 public interface RoutingManger {
 
-    Object routing(String service, Object req);
+    Object routing(String service, Object... req);
 }

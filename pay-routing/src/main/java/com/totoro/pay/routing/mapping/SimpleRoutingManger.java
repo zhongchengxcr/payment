@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +36,7 @@ public class SimpleRoutingManger implements RoutingManger {
     private HandlerMapping handlerMapping;
 
     @Override
-    public Object routing(String service, Object req) {
+    public Object routing(String service, Object... req) {
 
         Preconditions.checkArgument(!StringUtils.isEmpty(service), "Service is empty!");
 

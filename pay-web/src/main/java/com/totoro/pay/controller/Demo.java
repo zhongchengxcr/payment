@@ -17,13 +17,20 @@ public class Demo {
     @Autowired
     private RoutingManger routingManger;
 
+
     @ApiOperation(value="获取用户列表", notes="")
     @RequestMapping(method = RequestMethod.GET,value = "/hello")
     public String hello(){
 
-        Object obj = routingManger.routing("wx.refund.app","zhongc");
+        Object obj = routingManger.routing("wx.refund.app","zhongc","asdasd");
+
+         obj = routingManger.routing("wx.refund.app");
+
+        obj = routingManger.routing("wx.pay.app","zhongc","sdfsdf","sdfsdf");
 
         obj = routingManger.routing("wx.pay.app","zhongc");
+
+        obj = routingManger.routing("wx.pay.app");
 
         System.out.println(obj);
         return "hello !";

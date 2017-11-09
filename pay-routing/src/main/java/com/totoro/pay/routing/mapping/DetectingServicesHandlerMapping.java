@@ -3,7 +3,7 @@ package com.totoro.pay.routing.mapping;
 import com.google.common.base.Preconditions;
 import com.totoro.pay.channel.annotation.ChannelMapping;
 import com.totoro.pay.channel.channel.ChannelPayProcess;
-import com.totoro.pay.routing.exception.HandlerRegistException;
+import com.totoro.pay.routing.exception.HandlerRegistryException;
 import com.totoro.pay.routing.util.AopTargetUtils;
 import com.totoro.pay.routing.util.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * 标题、简要说明. <br>
@@ -35,14 +36,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class DetectingServicesHandlerMapping implements HandlerMapping, InitializingBean {
 
-
     @Autowired
     private Map<String, ChannelPayProcess> channels;
 
     private MappingRegistry mappingRegistry = new MappingRegistry();
 
 
-    private Map<String, ChannelPayProcess> registFailedChannels = new ConcurrentHashMap<>();
+    private Map<String, ChannelPayProcess> registryFailedMapping = new ConcurrentHashMap<>();
 
 
     @Override
@@ -59,14 +59,13 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
     /**
      * 初始化
      */
-    protected void initHandlerMethods() {
+    private void initHandlerMethods() {
         this.detectHandlers();
         for (Map.Entry<String, ChannelPayProcess> entry : channels.entrySet()) {
             try {
                 detectHandlerMethods(entry);
-            } catch (HandlerRegistException hex) {
-                registFailedChannels.put(entry.getKey(), entry.getValue());
-                continue;
+            } catch (HandlerRegistryException hex) {
+                registryFailedMapping.put(entry.getKey(), entry.getValue());
             }
         }
     }
@@ -74,35 +73,39 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
     /**
      * 过滤每个实现了 ChannelPayProcess 的 bean,找出 "渠道"
      */
-    public void detectHandlers() {
-        channels.entrySet().stream().filter((entry) -> {
+    private void detectHandlers() {
+
+
+        Set<String> set = channels.entrySet().stream().filter((entry) -> {
+
             ChannelPayProcess channelProcess = entry.getValue();
             try {
                 Object channel = AopTargetUtils.getTarget(channelProcess);
                 Class channelType = channel.getClass();
-                return isChannelHandler(channelType);
-            } catch (Exception e) {
-
+                return !isChannelHandler(channelType);
+            } catch (Exception ignored) {
+                //忽略直接返回false
             }
             return false;
-        });
+        }).map((entry) -> entry.getKey()).collect(Collectors.toSet());
+
+
+        set.stream().forEach((key) -> channels.remove(key));
+
     }
 
 
     /**
      * 过滤每个方法
      *
-     * @param entry
+     * @param entry channel
      */
-    protected void detectHandlerMethods(final Map.Entry<String, ChannelPayProcess> entry) {
+    private void detectHandlerMethods(final Map.Entry<String, ChannelPayProcess> entry) {
         try {
             Object channel = AopTargetUtils.getTarget(entry.getValue());
             Set<Method> methods = MethodIntrospector.selectMethods(channel.getClass(), (ReflectionUtils.MethodFilter) method -> {
                 Annotation annotation = AnnotationUtils.findAnnotation(method, ChannelMapping.class);
-                if (annotation != null) {
-                    return true;
-                }
-                return false;
+                return annotation != null;
             });
 
             ChannelMapping classChannelMapping = AnnotationUtils.findAnnotation(channel.getClass(), ChannelMapping.class);
@@ -110,7 +113,7 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
             String routingServicePrefix = StringUtils.ignoreEmpty(classChannelMapping.value());
 
 
-            if (!StringUtils.endsWithIgnoreCase(routingServicePrefix, ".")) {
+            if (!StringUtils.isEmpty(routingServicePrefix) && !StringUtils.endsWithIgnoreCase(routingServicePrefix, ".")) {
                 routingServicePrefix += ".";
             }
 
@@ -126,18 +129,18 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
             }
 
         } catch (Exception e) {
-            throw new HandlerRegistException("Handler register failed :" + entry.getKey());
+            throw new HandlerRegistryException("Handler register failed :" + entry.getKey());
         }
     }
 
 
     private void registerMapping(String service, Object channel, Method method) {
         MethodHandlerDefinition handlerMethodInfo = new MethodHandlerDefinition();
-        handlerMethodInfo.setMethod(method).setChannel(channel);
+        handlerMethodInfo.setMethod(method).setChannel(channel).setClzz(channel.getClass());
         mappingRegistry.register(service, handlerMethodInfo);
     }
 
-    protected boolean isChannelHandler(Class<?> beanType) {
+    private boolean isChannelHandler(Class<?> beanType) {
         return AnnotatedElementUtils.hasAnnotation(beanType, ChannelMapping.class);
     }
 
@@ -149,19 +152,20 @@ public class DetectingServicesHandlerMapping implements HandlerMapping, Initiali
 
         private Map<String, MethodHandlerDefinition> mappingLookup = new ConcurrentHashMap<>(16);
 
-        public void register(String service, MethodHandlerDefinition handlerMethodInfo) {
+        void register(String service, MethodHandlerDefinition handlerMethodInfo) {
             Preconditions.checkArgument(!mappingLookup.containsKey(service), "Duplicate service : %s ", service);
             Preconditions.checkNotNull(handlerMethodInfo, "HandlerMethodInfo is null");
-            //TODO 检查
+            Preconditions.checkNotNull(handlerMethodInfo.getChannel(), "HandlerMethodInfo channel is null");
+            Preconditions.checkNotNull(handlerMethodInfo.getClzz(), "HandlerMethodInfo class type is null");
             mappingLookup.put(service, handlerMethodInfo);
         }
 
 
-        public Map<String, MethodHandlerDefinition> getMappings() {
+        private Map<String, MethodHandlerDefinition> getMappings() {
             return this.mappingLookup;
         }
 
-        public MethodHandlerDefinition getMappingByService(String service) {
+        private MethodHandlerDefinition getMappingByService(String service) {
             return mappingLookup.get(service);
         }
 

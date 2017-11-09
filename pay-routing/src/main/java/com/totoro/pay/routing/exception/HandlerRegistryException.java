@@ -12,15 +12,15 @@ package com.totoro.pay.routing.exception;
  * @author zhongcheng_m@yeah.net
  * @version 1.0.0
  */
-public class HandlerRegistException extends RuntimeException {
+public class HandlerRegistryException extends RuntimeException {
 
-    public HandlerRegistException(String message) {
+    public HandlerRegistryException(String message) {
         super(message);
     }
 
 
     @Override
-    public synchronized Throwable fillInStackTrace() {
+    public Throwable fillInStackTrace() {
         return null;
     }
 }

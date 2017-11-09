@@ -12,15 +12,15 @@ package com.totoro.pay.routing.exception;
  * @author zhongcheng_m@yeah.net
  * @version 1.0.0
  */
-public class HandlerAdapterInvokeIgArgsException extends RuntimeException {
+public class HandlerAdapterInvokeIllegalArgumentException extends IllegalArgumentException {
 
-    public HandlerAdapterInvokeIgArgsException(String message) {
+    public HandlerAdapterInvokeIllegalArgumentException(String message) {
         super(message);
     }
 
 
     @Override
-    public synchronized Throwable fillInStackTrace() {
+    public Throwable fillInStackTrace() {
         return null;
     }
 }

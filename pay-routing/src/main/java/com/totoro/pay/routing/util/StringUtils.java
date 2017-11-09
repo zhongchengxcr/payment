@@ -35,4 +35,5 @@ public class StringUtils extends org.springframework.util.StringUtils {
         }
         return str.substring(1, str.length());
     }
+
 }

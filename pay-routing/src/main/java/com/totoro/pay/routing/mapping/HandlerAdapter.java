@@ -32,13 +32,12 @@ public interface HandlerAdapter {
      * Use the given handler to handle this request.
      * The workflow that is required may vary widely.
      *
-     * @param args current routing request
+     * @param args    current routing request
      * @param handler handler to use. This object must have previously been passed
      *                to the {@code supports} method of this interface, which must have
      *                returned {@code true}.
      * @return channel api reponse
      * model data, or {@code null} if the request has been handled directly
-     * @throws Exception in case of errors
      */
     Object handle(Object handler, Object... args);
 

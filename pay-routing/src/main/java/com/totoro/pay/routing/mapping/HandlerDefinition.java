@@ -13,5 +13,5 @@ package com.totoro.pay.routing.mapping;
  * @version 1.0.0
  */
 public interface HandlerDefinition {
-    //TODO 没想好 ,  好像没必要有这个接口
+    //TODO 没想好 ,  扩展使用
 }
