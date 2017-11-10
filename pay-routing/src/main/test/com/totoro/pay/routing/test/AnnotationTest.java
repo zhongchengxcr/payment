@@ -1,4 +1,4 @@
-package com.totoro.pay.routing.annotation;
+package com.totoro.pay.routing.test;
 
 import com.totoro.pay.channel.annotation.ChannelMapping;
 

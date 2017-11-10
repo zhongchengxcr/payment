@@ -12,5 +12,27 @@ package com.totoro.pay.api.requert;
  * @author zhongcheng_m@yeah.net
  * @version 1.0.0
  */
-public class BaseApiResultRequest {
+public abstract class BaseApiResultRequest {
+
+    //接口类型 String(32)
+    protected String service;
+
+    //版本号 String(8)
+    protected String version;
+
+    //字符集 String(8)
+    protected String charset;
+
+    //签名方式 String(8)
+    protected String sign_type;
+
+    //商户号 String(32)
+    protected String mch_id;
+
+    //随机字符串 String(32)
+    protected String nonce_str;
+
+    //签名 String(32)
+    private String sign;
+
 }
